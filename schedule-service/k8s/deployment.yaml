@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schedule-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: schedule-service
+  template:
+    metadata:
+      labels:
+        app: schedule-service
+    spec:
+      containers:
+      - name: schedule-service
+        # IMPORTANT: Replace this with the actual path to your image
+        image: your-docker-repo/schedule-service:latest
+        ports:
+        - containerPort: 8082
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://mysql-service:3306/schedule_db"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: password
