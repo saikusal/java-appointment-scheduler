@@ -1,4 +1,5 @@
 com/scheduler/bookingservice/BookingServiceApplication.class
+com/scheduler/bookingservice/config/SecurityConfig.class
 com/scheduler/bookingservice/model/Appointment.class
 com/scheduler/bookingservice/controller/BookingController.class
 com/scheduler/bookingservice/dto/ServiceDTO.class

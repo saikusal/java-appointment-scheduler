@@ -1,3 +1,4 @@
+com/scheduler/scheduleservice/config/SecurityConfig.class
 com/scheduler/scheduleservice/repository/AvailabilityRepository.class
 com/scheduler/scheduleservice/model/Service.class
 com/scheduler/scheduleservice/ScheduleServiceApplication.class
