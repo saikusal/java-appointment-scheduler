@@ -12,8 +12,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Arrays;
 
-// @Configuration
-// @EnableWebSecurity
+@Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
@@ -21,10 +21,10 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                // For this service, we allow all requests to any endpoint
-                .anyRequest().permitAll()
-            )
+            // .authorizeHttpRequests(auth -> auth
+            //     // For this service, we allow all requests to any endpoint
+            //     .anyRequest().permitAll()
+            // )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
