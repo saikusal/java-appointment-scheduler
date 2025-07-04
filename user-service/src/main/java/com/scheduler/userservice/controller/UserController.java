@@ -45,8 +45,10 @@ public class UserController {
             User user = userOptional.get();
             // Check if the provided password matches the stored hash
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                // In a real app, you would return a JWT token here
-                return ResponseEntity.ok().body("Login successful");
+                // In a real app, you would return a JWT token here.
+                // For now, we return the user object.
+                user.setPassword(null); // Don't send the password hash to the client
+                return ResponseEntity.ok().body(java.util.Map.of("user", user));
             }
         }
 
