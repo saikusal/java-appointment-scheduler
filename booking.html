@@ -190,6 +190,7 @@
             e.preventDefault();
             const appointment = {
                 providerId: providerId,
+                userId: 1, // Hardcoded to user 1, since we don't have login
                 serviceId: serviceSelect.value,
                 clientName: document.getElementById('name').value,
                 clientEmail: document.getElementById('email').value,

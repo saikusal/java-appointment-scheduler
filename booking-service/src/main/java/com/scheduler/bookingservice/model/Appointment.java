@@ -20,6 +20,9 @@ public class Appointment {
     private Long providerId;
 
     @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
     private Long serviceId;
 
     @Column(nullable = false)
@@ -39,6 +42,8 @@ public class Appointment {
     public void setId(Long id) { this.id = id; }
     public Long getProviderId() { return providerId; }
     public void setProviderId(Long providerId) { this.providerId = providerId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     public Long getServiceId() { return serviceId; }
     public void setServiceId(Long serviceId) { this.serviceId = serviceId; }
     public String getClientName() { return clientName; }
