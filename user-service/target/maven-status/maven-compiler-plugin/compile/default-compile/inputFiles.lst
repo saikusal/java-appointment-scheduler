@@ -1,0 +1,6 @@
+/app/src/main/java/com/scheduler/userservice/controller/UserController.java
+/app/src/main/java/com/scheduler/userservice/UserServiceApplication.java
+/app/src/main/java/com/scheduler/userservice/controller/LoginRequest.java
+/app/src/main/java/com/scheduler/userservice/model/User.java
+/app/src/main/java/com/scheduler/userservice/config/SecurityConfig.java
+/app/src/main/java/com/scheduler/userservice/repository/UserRepository.java

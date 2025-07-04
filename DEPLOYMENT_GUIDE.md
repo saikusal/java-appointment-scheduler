@@ -79,20 +79,44 @@ Follow these steps in your project's root directory (`C:/Users/ajithsai.kusal/De
 
 ### Phase 1: Preparation (On Your Local Machine)
 
-1.  **Build Docker Images:**
-    For each of the three services, navigate into its directory and run the `docker build` command.
+This phase covers building the application and the Docker images on your local development machine.
+
+1.  **Build Executable JARs:**
+    For each of the three services (`user-service`, `schedule-service`, `booking-service`), you must first compile the code and package it into an executable `.jar` file.
+
+    *   **If you have Maven installed locally:** Navigate into each service's directory and run `mvn clean package -DskipTests`.
+    *   **If you do NOT have Maven installed locally:** You can use Docker to run the build command. Navigate to the service's directory and run the following, which will save the output to your local machine.
+        ```bash
+        # Example for user-service:
+        docker run --rm -v "$(pwd):/app" -v "$HOME/.m2:/root/.m2" -w /app maven:3.8.5-openjdk-17 mvn clean package -DskipTests
+        ```
+    Repeat this process for all three services.
+
+2.  **Build Docker Images:**
+    With the `.jar` files created in the `target` directory of each service, you can now build the Docker images. This step no longer requires an internet connection as it just copies the local `.jar` file.
     **Note:** Replace `your-docker-repo` with your Docker Hub username or Amazon ECR URI.
     ```bash
     # In user-service/
     docker build -t your-docker-repo/user-service:latest .
+
     # In schedule-service/
     docker build -t your-docker-repo/schedule-service:latest .
+
     # In booking-service/
     docker build -t your-docker-repo/booking-service:latest .
     ```
 
-3.  **Push Docker Images:**
-    Push the newly built images to your container registry. You may need to log in first (`docker login`).
+3.  **Create Repositories on Docker Hub:**
+    Before you can push your images, you must manually create a repository for each one on the Docker Hub website.
+    *   Go to [hub.docker.com](https://hub.docker.com) and log in.
+    *   Click **Create Repository**.
+    *   Enter the repository name exactly as it appears in your image tag (e.g., `user-service`).
+    *   Set the visibility to **Public**.
+    *   Click **Create**.
+    *   Repeat this process for `schedule-service` and `booking-service`.
+
+4.  **Push Docker Images:**
+    Once the repositories exist online, you can push your images. You may need to log in first (`docker login`).
     ```bash
     docker push your-docker-repo/user-service:latest
     docker push your-docker-repo/schedule-service:latest
@@ -101,8 +125,12 @@ Follow these steps in your project's root directory (`C:/Users/ajithsai.kusal/De
 
 ### Phase 2: Server Setup (On the EC2 Instance)
 
+#### Server Requirements
+*   **Instance Type:** A `t2.small` or `t3.small` instance (1 vCPU, 2GB RAM) is the absolute minimum. A **`t2.medium` or `t3.medium` (2 vCPU, 4GB RAM) is strongly recommended** for stable performance. A 1GB RAM instance is not sufficient and will cause services to fail.
+*   **Operating System:** Amazon Linux 2023
+
 4.  **Launch EC2 Instance:**
-    *   Launch a new **Amazon Linux 2023** EC2 instance.
+    *   Launch a new EC2 instance based on the requirements above.
     *   Create and assign a **Security Group** that allows inbound traffic for:
         *   **SSH (Port 22)** from your IP address.
         *   **Custom TCP (Port 8081)** from `0.0.0.0/0`.
@@ -139,10 +167,25 @@ Follow these steps in your project's root directory (`C:/Users/ajithsai.kusal/De
     cd your-repo
     ```
 
-7.  **Launch the Application:**
-    Use Docker Compose to pull your images and start all the containers in the background.
+7.  **Update and Launch the Application:**
+    Before launching, you must edit the `docker-compose.yml` file to use your Docker Hub username.
     ```bash
-    # This command reads the docker-compose.yml file and starts everything
+    # Open the file for editing
+    nano docker-compose.yml
+    ```
+    In the editor, change the `image:` line for each service from `your-docker-repo/...` to `saikusal/...`. For example:
+    `image: your-docker-repo/user-service:latest`
+    becomes
+    `image: saikusal/user-service:latest`
+
+    Save the file (Ctrl+O, Enter) and exit (Ctrl+X).
+
+    Now, use Docker Compose to pull your images and start all the containers.
+    ```bash
+    # Log in to Docker Hub on the server to be able to pull images
+    docker login
+
+    # This command reads the updated docker-compose.yml file and starts everything
     docker-compose up -d
     ```
 
@@ -155,4 +198,21 @@ Follow these steps in your project's root directory (`C:/Users/ajithsai.kusal/De
     # Check the status of the containers
     docker-compose ps
     ```
-    You can now access the API endpoints using the EC2 instance's public IP address and the corresponding port for each service.
+    You can now access the API endpoints using the EC2 instance's public IP address and a corresponding port for each service.
+
+---
+
+## 3. Troubleshooting
+
+### Error: `pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`
+
+*   **Cause:** The Docker command-line tool cannot connect to the Docker Desktop backend engine.
+*   **Solution:** Make sure the **Docker Desktop** application is running on your machine before you execute any `docker` commands.
+
+### Error: `Non-resolvable parent POM` or `Could not transfer artifact`
+
+*   **Cause:** This is a network error. Maven, running inside the Docker container, cannot connect to the internet to download dependencies. This is usually caused by a corporate proxy, VPN, or firewall.
+*   **Solution:**
+    1.  **Check for Proxies/VPNs:** If you are on a corporate network, configure Docker Desktop to use your company's proxy settings (**Settings > Resources > Proxies**).
+    2.  **Check Firewalls:** Temporarily disable your firewall to see if it resolves the issue. If it does, add a permanent exception for Docker Desktop.
+    3.  **Test Network Connectivity:** Run `docker run --rm busybox ping -c 1 repo.maven.apache.org`. If this fails, it confirms a network issue within Docker.

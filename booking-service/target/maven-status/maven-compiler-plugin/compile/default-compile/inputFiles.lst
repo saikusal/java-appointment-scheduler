@@ -1,0 +1,7 @@
+/app/src/main/java/com/scheduler/bookingservice/BookingServiceApplication.java
+/app/src/main/java/com/scheduler/bookingservice/dto/ServiceDTO.java
+/app/src/main/java/com/scheduler/bookingservice/controller/BookingController.java
+/app/src/main/java/com/scheduler/bookingservice/model/Appointment.java
+/app/src/main/java/com/scheduler/bookingservice/repository/AppointmentRepository.java
+/app/src/main/java/com/scheduler/bookingservice/service/BookingService.java
+/app/src/main/java/com/scheduler/bookingservice/dto/AvailabilityDTO.java

@@ -1,0 +1,6 @@
+com/scheduler/userservice/controller/UserController.class
+com/scheduler/userservice/UserServiceApplication.class
+com/scheduler/userservice/controller/LoginRequest.class
+com/scheduler/userservice/model/User.class
+com/scheduler/userservice/repository/UserRepository.class
+com/scheduler/userservice/config/SecurityConfig.class

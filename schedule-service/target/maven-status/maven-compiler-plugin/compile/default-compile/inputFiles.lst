@@ -1,0 +1,6 @@
+/app/src/main/java/com/scheduler/scheduleservice/repository/AvailabilityRepository.java
+/app/src/main/java/com/scheduler/scheduleservice/model/Service.java
+/app/src/main/java/com/scheduler/scheduleservice/repository/ServiceRepository.java
+/app/src/main/java/com/scheduler/scheduleservice/model/Availability.java
+/app/src/main/java/com/scheduler/scheduleservice/controller/ScheduleController.java
+/app/src/main/java/com/scheduler/scheduleservice/ScheduleServiceApplication.java

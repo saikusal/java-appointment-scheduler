@@ -1,0 +1,6 @@
+com/scheduler/scheduleservice/repository/AvailabilityRepository.class
+com/scheduler/scheduleservice/model/Service.class
+com/scheduler/scheduleservice/ScheduleServiceApplication.class
+com/scheduler/scheduleservice/repository/ServiceRepository.class
+com/scheduler/scheduleservice/controller/ScheduleController.class
+com/scheduler/scheduleservice/model/Availability.class

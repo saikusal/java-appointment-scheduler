@@ -1,14 +1,15 @@
-# --- Stage 1: Build the application ---
-FROM maven:3.8.5-openjdk-17 AS build
-WORKDIR /app
-COPY pom.xml .
-RUN mvn dependency:go-offline
-COPY src ./src
-RUN mvn package -DskipTests
-
-# --- Stage 2: Create the final, lean image ---
+# --- Final, lean image ---
+# Use a minimal Java 17 runtime image
 FROM eclipse-temurin:17-jre-focal
+
+# Set the working directory
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+
+# Copy the pre-built executable JAR file from the local target directory
+COPY target/booking-service-0.0.1-SNAPSHOT.jar app.jar
+
+# Expose the port the application runs on
 EXPOSE 8083
+
+# Command to run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
