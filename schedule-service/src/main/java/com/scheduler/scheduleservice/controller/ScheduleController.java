@@ -36,7 +36,7 @@ public class ScheduleController {
         return ResponseEntity.ok(services);
     }
 
-    @GetMapping("/services/{serviceId}")
+    @GetMapping(value = {"/services/{serviceId}", "/services/{serviceId}/"})
     public ResponseEntity<Service> getServiceById(@PathVariable Long serviceId) {
         return serviceRepository.findById(serviceId)
                 .map(ResponseEntity::ok)
