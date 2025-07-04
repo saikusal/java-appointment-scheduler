@@ -54,7 +54,8 @@ public class BookingService {
 
                     for (AvailabilityDTO availability : availabilities) {
                         LocalDateTime slot = date.atTime(availability.getStartTime());
-                        while (slot.plusMinutes(service.getDurationMinutes()).toLocalTime().isBefore(availability.getEndTime()) || slot.plusMinutes(service.getDurationMinutes()).toLocalTime().equals(availability.getEndTime())) {
+                        // Loop as long as the end of the new slot is not after the provider's end time
+                        while (!slot.plusMinutes(service.getDurationMinutes()).toLocalTime().isAfter(availability.getEndTime())) {
                             final LocalDateTime currentSlot = slot;
                             boolean isBooked = existingAppointments.stream()
                                     .anyMatch(a -> a.getStartTime().equals(currentSlot));
