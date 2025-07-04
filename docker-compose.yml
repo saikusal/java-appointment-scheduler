@@ -29,17 +29,13 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db:3306/schedule_db
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_CONFIG_LOCATION=file:/config/application.properties
-    volumes:
-      - ./schedule-service/src/main/resources/:/config/
-    command: sh -c "ls -l /config/ && java -jar /app.jar"
     depends_on:
       mysql_db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 10s
       retries: 5
 
   # Booking Service
