@@ -24,9 +24,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db:3306/schedule_db
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_CONFIG_LOCATION=file:/app/config/application.properties
+      - SPRING_CONFIG_LOCATION=file:/config/application.properties
     volumes:
-      - ./schedule-service/src/main/resources/:/app/config/
+      - ./schedule-service/src/main/resources/:/config/
+    command: sh -c "ls -l /config/ && java -jar /app.jar"
     depends_on:
       mysql_db:
         condition: service_healthy
