@@ -36,6 +36,13 @@ public class ScheduleController {
         return ResponseEntity.ok(services);
     }
 
+    @GetMapping("/services/{serviceId}")
+    public ResponseEntity<Service> getServiceById(@PathVariable Long serviceId) {
+        return serviceRepository.findById(serviceId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/services/{serviceId}")
     public ResponseEntity<Void> deleteService(@PathVariable Long serviceId) {
         // In a real app, you'd also check if the user owns this service before deleting.
