@@ -193,7 +193,7 @@
                 serviceId: serviceSelect.value,
                 clientName: document.getElementById('name').value,
                 clientEmail: document.getElementById('email').value,
-                startTime: `${dateInput.value}T${selectedTimeInput.value}`
+                startTime: selectedTimeInput.value // This value is already the full ISO timestamp
             };
 
             try {

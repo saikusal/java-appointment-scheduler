@@ -21,10 +21,9 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // .authorizeHttpRequests(auth -> auth
-            //     // For this service, we allow all requests to any endpoint
-            //     .anyRequest().permitAll()
-            // )
+            .authorizeRequests()
+                .anyRequest().permitAll()
+            .and() // Use and() to continue the chain
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
