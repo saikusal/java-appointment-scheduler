@@ -5,10 +5,11 @@ import com.scheduler.bookingservice.dto.ServiceDTO;
 import com.scheduler.bookingservice.model.Appointment;
 import com.scheduler.bookingservice.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,58 +21,70 @@ import java.util.stream.Collectors;
 public class BookingService {
 
     private final AppointmentRepository appointmentRepository;
-    private final WebClient webClient;
+    private final RestTemplate restTemplate;
+    private final String scheduleServiceUrl;
 
-    public BookingService(AppointmentRepository appointmentRepository, WebClient.Builder webClientBuilder, @Value("${SCHEDULE_SERVICE_URL}") String scheduleServiceUrl) {
+    public BookingService(AppointmentRepository appointmentRepository, RestTemplate restTemplate, @Value("${SCHEDULE_SERVICE_URL}") String scheduleServiceUrl) {
         this.appointmentRepository = appointmentRepository;
-        this.webClient = webClientBuilder.baseUrl(scheduleServiceUrl).build();
+        this.restTemplate = restTemplate;
+        this.scheduleServiceUrl = scheduleServiceUrl;
     }
 
-    public Mono<List<LocalDateTime>> getAvailableSlots(Long providerId, Long serviceId, LocalDate date) {
+    public List<LocalDateTime> getAvailableSlots(Long providerId, Long serviceId, LocalDate date) {
         // 1. Fetch the service details to get the duration
-        Mono<ServiceDTO> serviceMono = webClient.get()
-                .uri("/services/{id}", serviceId) // Assuming this endpoint exists in schedule-service
-                .retrieve()
-                .bodyToMono(ServiceDTO.class);
+        ServiceDTO service = restTemplate.getForObject(scheduleServiceUrl + "/services/" + serviceId, ServiceDTO.class);
+
+        if (service == null) {
+            return new ArrayList<>();
+        }
 
         // 2. Fetch the provider's availability for the given day of the week
-        Flux<AvailabilityDTO> availabilityFlux = webClient.get()
-                .uri("/availability/provider/{providerId}", providerId)
-                .retrieve()
-                .bodyToFlux(AvailabilityDTO.class)
-                .filter(a -> a.getDayOfWeek() == date.getDayOfWeek().getValue() % 7); // Adjust for 0=Sun, 1=Mon...
+        ResponseEntity<List<AvailabilityDTO>> availabilityResponse = restTemplate.exchange(
+                scheduleServiceUrl + "/availability/provider/" + providerId,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<AvailabilityDTO>>() {}
+        );
+        List<AvailabilityDTO> allAvailabilities = availabilityResponse.getBody();
+        
+        if (allAvailabilities == null || allAvailabilities.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Filter for the correct day of the week
+        List<AvailabilityDTO> availabilities = allAvailabilities.stream()
+                .filter(a -> a.getDayOfWeek() == date.getDayOfWeek().getValue() % 7)
+                .collect(Collectors.toList());
+
+        if (availabilities.isEmpty()) {
+            return new ArrayList<>();
+        }
 
         // 3. Fetch existing appointments for that day
         List<Appointment> existingAppointments = appointmentRepository.findByProviderIdAndStartTimeBetween(
                 providerId, date.atStartOfDay(), date.plusDays(1).atStartOfDay());
 
-        // 4. Combine the results and calculate slots
-        return Mono.zip(serviceMono, availabilityFlux.collectList())
-                .map(tuple -> {
-                    ServiceDTO service = tuple.getT1();
-                    List<AvailabilityDTO> availabilities = tuple.getT2();
-                    List<LocalDateTime> availableSlots = new ArrayList<>();
+        // 4. Calculate slots
+        List<LocalDateTime> availableSlots = new ArrayList<>();
+        for (AvailabilityDTO availability : availabilities) {
+            LocalDateTime slot = date.atTime(availability.getStartTime());
+            // Loop as long as the end of the new slot is not after the provider's end time
+            while (!slot.plusMinutes(service.getDurationMinutes()).toLocalTime().isAfter(availability.getEndTime())) {
+                final LocalDateTime currentSlot = slot;
+                boolean isBooked = existingAppointments.stream()
+                        .anyMatch(a -> a.getStartTime().equals(currentSlot));
 
-                    for (AvailabilityDTO availability : availabilities) {
-                        LocalDateTime slot = date.atTime(availability.getStartTime());
-                        // Loop as long as the end of the new slot is not after the provider's end time
-                        while (!slot.plusMinutes(service.getDurationMinutes()).toLocalTime().isAfter(availability.getEndTime())) {
-                            final LocalDateTime currentSlot = slot;
-                            boolean isBooked = existingAppointments.stream()
-                                    .anyMatch(a -> a.getStartTime().equals(currentSlot));
-
-                            if (!isBooked) {
-                                availableSlots.add(currentSlot);
-                            }
-                            slot = slot.plusMinutes(service.getDurationMinutes());
-                        }
-                    }
-                    return availableSlots;
-                });
+                if (!isBooked) {
+                    availableSlots.add(currentSlot);
+                }
+                slot = slot.plusMinutes(service.getDurationMinutes());
+            }
+        }
+        return availableSlots;
     }
 
-    public Mono<Appointment> createAppointment(Appointment appointment) {
+    public Appointment createAppointment(Appointment appointment) {
         // In a real application, you would re-validate the slot here before saving
-        return Mono.just(appointmentRepository.save(appointment));
+        return appointmentRepository.save(appointment);
     }
 }

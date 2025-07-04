@@ -4,5 +4,6 @@ com/scheduler/bookingservice/model/Appointment.class
 com/scheduler/bookingservice/controller/BookingController.class
 com/scheduler/bookingservice/dto/ServiceDTO.class
 com/scheduler/bookingservice/service/BookingService.class
+com/scheduler/bookingservice/service/BookingService$1.class
 com/scheduler/bookingservice/dto/AvailabilityDTO.class
 com/scheduler/bookingservice/repository/AppointmentRepository.class

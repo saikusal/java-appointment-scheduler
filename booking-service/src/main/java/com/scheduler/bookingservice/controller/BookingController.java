@@ -5,8 +5,6 @@ import com.scheduler.bookingservice.service.BookingService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,17 +20,17 @@ public class BookingController {
     }
 
     @PostMapping
-    public Mono<Appointment> createAppointment(@RequestBody Appointment appointment) {
+    public Appointment createAppointment(@RequestBody Appointment appointment) {
         return bookingService.createAppointment(appointment);
     }
 
     @GetMapping("/availability/{providerId}")
-    public Mono<ResponseEntity<List<LocalDateTime>>> getAvailableSlots(
+    public ResponseEntity<List<LocalDateTime>> getAvailableSlots(
             @PathVariable Long providerId,
             @RequestParam Long serviceId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         
-        return bookingService.getAvailableSlots(providerId, serviceId, date)
-                .map(ResponseEntity::ok);
+        List<LocalDateTime> slots = bookingService.getAvailableSlots(providerId, serviceId, date);
+        return ResponseEntity.ok(slots);
     }
 }
