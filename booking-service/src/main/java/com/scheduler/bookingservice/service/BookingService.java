@@ -100,4 +100,8 @@ public class BookingService {
         // since the user loaded the page.
         return appointmentRepository.save(appointment);
     }
+
+    public List<Appointment> getAppointmentsByProvider(Long providerId) {
+        return appointmentRepository.findByProviderId(providerId);
+    }
 }

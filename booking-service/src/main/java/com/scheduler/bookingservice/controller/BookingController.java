@@ -33,4 +33,10 @@ public class BookingController {
         List<LocalDateTime> slots = bookingService.getAvailableSlots(providerId, serviceId, date);
         return ResponseEntity.ok(slots);
     }
+
+    @GetMapping("/provider/{providerId}")
+    public ResponseEntity<List<Appointment>> getAppointmentsByProvider(@PathVariable Long providerId) {
+        List<Appointment> appointments = bookingService.getAppointmentsByProvider(providerId);
+        return ResponseEntity.ok(appointments);
+    }
 }

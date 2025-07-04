@@ -13,4 +13,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Find all appointments for a specific provider that fall within a given time range
     List<Appointment> findByProviderIdAndStartTimeBetween(Long providerId, LocalDateTime start, LocalDateTime end);
 
+    // Find all appointments for a specific provider
+    List<Appointment> findByProviderId(Long providerId);
 }
