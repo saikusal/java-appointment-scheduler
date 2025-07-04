@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book an Appointment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; margin: 0; padding: 40px; }
+        .container { max-width: 700px; margin: auto; background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        h1, h2 { text-align: center; }
+        .form-step { margin-bottom: 25px; }
+        label { font-weight: 600; display: block; margin-bottom: 8px; }
+        select, input[type="date"], input[type="text"], input[type="email"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        #time-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 15px; }
+        .time-slot { padding: 10px; border: 1px solid #007bff; color: #007bff; background-color: #fff; border-radius: 8px; text-align: center; cursor: pointer; }
+        .time-slot:hover { background-color: #e9f4ff; }
+        .time-slot.selected { background-color: #007bff; color: #fff; font-weight: 600; }
+        .hidden { display: none; }
+        .submit-btn { background-color: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%; }
+        #confirmation-message { padding: 20px; text-align: center; background-color: #d4edda; color: #155724; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="booking-flow">
+            <h1>Book an Appointment</h1>
+            <h2 id="provider-name"></h2>
+
+            <form id="booking-form">
+                <!-- Step 1: Select Service -->
+                <div id="step1" class="form-step">
+                    <label for="service">1. Select a Service</label>
+                    <select id="service" name="service_id" required>
+                        <option value="">-- Loading services --</option>
+                    </select>
+                </div>
+
+                <!-- Step 2: Select Date -->
+                <div id="step2" class="form-step hidden">
+                    <label for="date">2. Select a Date</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <!-- Step 3: Select Time Slot -->
+                <div id="step3" class="form-step hidden">
+                    <label>3. Select an Available Time</label>
+                    <div id="time-slots-container">
+                        <div id="time-slots"></div>
+                        <p id="loading-message" class="hidden">Loading available times...</p>
+                        <p id="no-slots-message" class="hidden">No available slots for this day. Please select another date.</p>
+                    </div>
+                    <input type="hidden" id="selected-time" name="start_time" required>
+                </div>
+
+                <!-- Step 4: Your Details -->
+                <div id="step4" class="form-step hidden">
+                    <label for="name">4. Your Name</label>
+                    <input type="text" id="name" name="client_name" required>
+                    <label for="email" style="margin-top:15px;">5. Your Email</label>
+                    <input type="email" id="email" name="client_email" required>
+                </div>
+
+                <button type="submit" id="submit-btn" class="submit-btn hidden">Confirm Appointment</button>
+            </form>
+        </div>
+        <div id="confirmation-message" class="hidden">
+            <h3>Thank You!</h3>
+            <p>Your appointment has been successfully booked.</p>
+        </div>
+    </div>
+
+    <script>
+        const SCHEDULE_API = 'http://13.233.134.198:8082';
+        const BOOKING_API = 'http://13.233.134.198:8083';
+        const USER_API = 'http://13.233.134.198:8081';
+
+        const providerNameH2 = document.getElementById('provider-name');
+        const serviceSelect = document.getElementById('service');
+        const dateInput = document.getElementById('date');
+        const timeSlotsDiv = document.getElementById('time-slots');
+        const selectedTimeInput = document.getElementById('selected-time');
+        const bookingForm = document.getElementById('booking-form');
+
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const step4 = document.getElementById('step4');
+        const submitBtn = document.getElementById('submit-btn');
+        const loadingMsg = document.getElementById('loading-message');
+        const noSlotsMsg = document.getElementById('no-slots-message');
+
+        let providerId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            providerId = params.get('provider');
+            if (!providerId) {
+                document.body.innerHTML = '<h1>Error: No provider specified.</h1>';
+                return;
+            }
+            
+            // Fetch provider and service data
+            await fetchProviderDetails();
+            await fetchServices();
+        });
+
+        async function fetchProviderDetails() {
+            try {
+                // This endpoint doesn't exist yet, so we'll just use a placeholder name.
+                // In a real app, you'd add a GET /api/users/{id} to the user-service.
+                providerNameH2.textContent = 'with Provider'; 
+            } catch (error) {
+                providerNameH2.textContent = 'with Provider';
+            }
+        }
+
+        async function fetchServices() {
+            try {
+                const response = await fetch(`${SCHEDULE_API}/api/schedules/services/provider/${providerId}`);
+                const services = await response.json();
+                serviceSelect.innerHTML = '<option value="">-- Choose a service --</option>';
+                services.forEach(s => {
+                    const option = document.createElement('option');
+                    option.value = s.id;
+                    option.textContent = `${s.name} (${s.durationMinutes} mins)`;
+                    serviceSelect.appendChild(option);
+                });
+            } catch (error) {
+                serviceSelect.innerHTML = '<option value="">-- Could not load services --</option>';
+            }
+        }
+
+        serviceSelect.addEventListener('change', () => {
+            step2.classList.toggle('hidden', !serviceSelect.value);
+            if (dateInput.value) fetchAvailableSlots();
+        });
+
+        dateInput.addEventListener('change', fetchAvailableSlots);
+
+        async function fetchAvailableSlots() {
+            const serviceId = serviceSelect.value;
+            const date = dateInput.value;
+
+            if (!serviceId || !date) {
+                step3.classList.add('hidden');
+                return;
+            }
+
+            step3.classList.remove('hidden');
+            loadingMsg.classList.remove('hidden');
+            noSlotsMsg.classList.add('hidden');
+            timeSlotsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`${BOOKING_API}/api/bookings/availability/${providerId}?serviceId=${serviceId}&date=${date}`);
+                if (!response.ok) throw new Error('Failed to fetch slots.');
+                const slots = await response.json();
+
+                loadingMsg.classList.add('hidden');
+                if (slots.length > 0) {
+                    slots.forEach(slot => {
+                        const slotEl = document.createElement('div');
+                        slotEl.className = 'time-slot';
+                        slotEl.textContent = slot;
+                        slotEl.dataset.time = slot;
+                        slotEl.addEventListener('click', selectTimeSlot);
+                        timeSlotsDiv.appendChild(slotEl);
+                    });
+                } else {
+                    noSlotsMsg.classList.remove('hidden');
+                }
+            } catch (error) {
+                loadingMsg.classList.add('hidden');
+                noSlotsMsg.textContent = 'Error loading slots. Please try again.';
+                noSlotsMsg.classList.remove('hidden');
+            }
+        }
+
+        function selectTimeSlot(event) {
+            document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('selected'));
+            const selectedSlot = event.target;
+            selectedSlot.classList.add('selected');
+            selectedTimeInput.value = selectedSlot.dataset.time;
+            step4.classList.remove('hidden');
+            submitBtn.classList.remove('hidden');
+        }
+
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const appointment = {
+                providerId: providerId,
+                serviceId: serviceSelect.value,
+                clientName: document.getElementById('name').value,
+                clientEmail: document.getElementById('email').value,
+                startTime: `${dateInput.value}T${selectedTimeInput.value}`
+            };
+
+            try {
+                const response = await fetch(`${BOOKING_API}/api/bookings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(appointment)
+                });
+                if (!response.ok) throw new Error('Could not book appointment.');
+                
+                document.getElementById('booking-flow').classList.add('hidden');
+                document.getElementById('confirmation-message').classList.remove('hidden');
+
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+    </script>
+
+</body>
+</html>

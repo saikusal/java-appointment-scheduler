@@ -3,7 +3,6 @@ package com.scheduler.bookingservice.controller;
 import com.scheduler.bookingservice.model.Appointment;
 import com.scheduler.bookingservice.service.BookingService;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -22,21 +21,18 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
-    @GetMapping("/slots/available")
+    @PostMapping
+    public Mono<Appointment> createAppointment(@RequestBody Appointment appointment) {
+        return bookingService.createAppointment(appointment);
+    }
+
+    @GetMapping("/availability/{providerId}")
     public Mono<ResponseEntity<List<LocalDateTime>>> getAvailableSlots(
-            @RequestParam Long userId,
+            @PathVariable Long providerId,
             @RequestParam Long serviceId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         
-        return bookingService.getAvailableSlots(userId, serviceId, date)
-                .map(slots -> ResponseEntity.ok(slots));
-    }
-
-    @PostMapping
-    public Mono<ResponseEntity<Appointment>> createAppointment(@RequestBody Appointment appointment) {
-        // In a real-world scenario, you'd perform more validation here,
-        // ensuring the requested slot is still available before creating the appointment.
-        return bookingService.createAppointment(appointment)
-                .map(created -> ResponseEntity.status(HttpStatus.CREATED).body(created));
+        return bookingService.getAvailableSlots(providerId, serviceId, date)
+                .map(ResponseEntity::ok);
     }
 }

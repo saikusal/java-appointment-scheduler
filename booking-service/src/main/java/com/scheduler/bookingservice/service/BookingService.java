@@ -27,7 +27,7 @@ public class BookingService {
         this.webClient = webClientBuilder.baseUrl(scheduleServiceUrl).build();
     }
 
-    public Mono<List<LocalDateTime>> getAvailableSlots(Long userId, Long serviceId, LocalDate date) {
+    public Mono<List<LocalDateTime>> getAvailableSlots(Long providerId, Long serviceId, LocalDate date) {
         // 1. Fetch the service details to get the duration
         Mono<ServiceDTO> serviceMono = webClient.get()
                 .uri("/services/{id}", serviceId) // Assuming this endpoint exists in schedule-service
@@ -36,14 +36,14 @@ public class BookingService {
 
         // 2. Fetch the provider's availability for the given day of the week
         Flux<AvailabilityDTO> availabilityFlux = webClient.get()
-                .uri("/availability/provider/{userId}", userId)
+                .uri("/availability/provider/{providerId}", providerId)
                 .retrieve()
                 .bodyToFlux(AvailabilityDTO.class)
                 .filter(a -> a.getDayOfWeek() == date.getDayOfWeek().getValue() % 7); // Adjust for 0=Sun, 1=Mon...
 
         // 3. Fetch existing appointments for that day
-        List<Appointment> existingAppointments = appointmentRepository.findByUserIdAndStartTimeBetween(
-                userId, date.atStartOfDay(), date.plusDays(1).atStartOfDay());
+        List<Appointment> existingAppointments = appointmentRepository.findByProviderIdAndStartTimeBetween(
+                providerId, date.atStartOfDay(), date.plusDays(1).atStartOfDay());
 
         // 4. Combine the results and calculate slots
         return Mono.zip(serviceMono, availabilityFlux.collectList())

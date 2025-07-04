@@ -8,12 +8,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 @SpringBootApplication
 public class BookingServiceApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(BookingServiceApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(BookingServiceApplication.class, args);
+	}
 
-    @Bean
-    public WebClient.Builder webClientBuilder() {
-        return WebClient.builder();
-    }
+	@Bean
+	public WebClient.Builder webClientBuilder() {
+		return WebClient.builder();
+	}
 }
