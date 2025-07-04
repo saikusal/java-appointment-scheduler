@@ -36,6 +36,13 @@ public class ScheduleController {
         return ResponseEntity.ok(services);
     }
 
+    @DeleteMapping("/services/{serviceId}")
+    public ResponseEntity<Void> deleteService(@PathVariable Long serviceId) {
+        // In a real app, you'd also check if the user owns this service before deleting.
+        serviceRepository.deleteById(serviceId);
+        return ResponseEntity.noContent().build();
+    }
+
     // --- Availability Endpoints ---
 
     @PostMapping("/availability")

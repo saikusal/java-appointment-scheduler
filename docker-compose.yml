@@ -70,5 +70,20 @@ services:
       timeout: 5s
       retries: 5
 
+  # Nginx Web Server for Front-end
+  nginx-web:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      # Mount the front-end files
+      - ./:/usr/share/nginx/html
+      # Mount the nginx configuration
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - user-service
+      - schedule-service
+      - booking-service
+
 volumes:
   mysql-data:
