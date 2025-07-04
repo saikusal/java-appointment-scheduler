@@ -22,7 +22,7 @@ public class BookingService {
     private final AppointmentRepository appointmentRepository;
     private final WebClient webClient;
 
-    public BookingService(AppointmentRepository appointmentRepository, WebClient.Builder webClientBuilder, @Value("${schedule.service.url}") String scheduleServiceUrl) {
+    public BookingService(AppointmentRepository appointmentRepository, WebClient.Builder webClientBuilder, @Value("${SCHEDULE_SERVICE_URL}") String scheduleServiceUrl) {
         this.appointmentRepository = appointmentRepository;
         this.webClient = webClientBuilder.baseUrl(scheduleServiceUrl).build();
     }
