@@ -84,7 +84,20 @@ public class BookingService {
     }
 
     public Appointment createAppointment(Appointment appointment) {
-        // In a real application, you would re-validate the slot here before saving
+        // 1. Get the service duration to calculate the end time
+        ServiceDTO service = restTemplate.getForObject(scheduleServiceUrl + "/services/" + appointment.getServiceId(), ServiceDTO.class);
+        if (service == null) {
+            // In a real app, you'd throw a proper exception here
+            throw new IllegalStateException("Service not found, cannot calculate end time.");
+        }
+
+        // 2. Calculate and set the end time
+        LocalDateTime endTime = appointment.getStartTime().plusMinutes(service.getDurationMinutes());
+        appointment.setEndTime(endTime);
+
+        // 3. Save the completed appointment
+        // In a real application, you would also re-validate here that the slot hasn't been taken
+        // since the user loaded the page.
         return appointmentRepository.save(appointment);
     }
 }
