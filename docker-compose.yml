@@ -127,6 +127,18 @@ services:
     networks:
       - scheduler-network
 
+  # Node Exporter for Host Metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    pid: "host"
+    volumes:
+      - /:/host:ro,rslave
+    networks:
+      - scheduler-network
+
 volumes:
   mysql-data:
 
