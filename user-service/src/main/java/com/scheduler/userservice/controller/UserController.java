@@ -55,4 +55,10 @@ public class UserController {
         // If user not found or password doesn't match
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
     }
+
+    // Test endpoint to verify deployment
+    @GetMapping("/version")
+    public String getVersion() {
+        return "v2";
+    }
 }

@@ -1,11 +1,11 @@
 package com.scheduler.userservice.controller;
 
-// A simple DTO (Data Transfer Object) for handling login requests
+// A simple DTO (Data Transfer Object) to handle login credentials
 public class LoginRequest {
     private String email;
     private String password;
 
-    // Getters and Setters
+    // Getters and setters are needed for JSON deserialization
     public String getEmail() {
         return email;
     }
