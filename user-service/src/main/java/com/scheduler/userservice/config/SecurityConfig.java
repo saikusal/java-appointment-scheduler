@@ -27,10 +27,9 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             // Configure authorization rules
             .authorizeHttpRequests(auth -> auth
-                // Allow all requests to the /api/users/** endpoints (for registration and login)
-                .antMatchers("/api/users/**").permitAll()
-                // Any other request must be authenticated (though we have no other endpoints yet)
-                .anyRequest().authenticated()
+                // For simplicity in this project, we permit all requests.
+                // In a real-world scenario, you'd have more granular rules.
+                .anyRequest().permitAll()
             )
             // Configure session management to be stateless
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
